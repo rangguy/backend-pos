@@ -1,0 +1,136 @@
+package middlewares
+
+import (
+	"backend/common/response"
+	"backend/config"
+	"backend/constants"
+	errConstant "backend/constants/error"
+	services "backend/services/user"
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/sirupsen/logrus"
+	"net/http"
+	"strings"
+	"time"
+)
+
+func HandlePanic() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		defer func() {
+			if r := recover(); r != nil {
+				logrus.Errorf("Recovered from panic: %v", r)
+				c.Status(http.StatusInternalServerError).JSON(response.Response{
+					Status:  constants.Error,
+					Message: errConstant.ErrInternalServerError.Error(),
+				})
+			}
+		}()
+		return c.Next()
+	}
+}
+
+func RateLimiter(max int, duration time.Duration) fiber.Handler {
+	config := limiter.Config{
+		Max:        max,
+		Expiration: duration,
+		KeyGenerator: func(c *fiber.Ctx) string {
+			return c.IP()
+		},
+		LimitReached: func(c *fiber.Ctx) error {
+			return c.Status(http.StatusTooManyRequests).JSON(response.Response{
+				Status:  constants.Error,
+				Message: errConstant.ErrTooManyRequests.Error(),
+			})
+		},
+	}
+	return limiter.New(config)
+}
+
+func extractBearerToken(token string) string {
+	arrayToken := strings.Split(token, " ")
+	if len(arrayToken) == 2 {
+		return arrayToken[1]
+	}
+	return ""
+}
+
+func responseUnauthorized(c *fiber.Ctx, message string) error {
+	return c.Status(http.StatusUnauthorized).JSON(response.Response{
+		Status:  constants.Error,
+		Message: message,
+	})
+}
+
+func validateAPIKey(c *fiber.Ctx) error {
+	apiKey := c.Get(constants.XApiKey)
+	requestAt := c.Get(constants.XRequestAt)
+	serviceName := c.Get(constants.XServiceName)
+	signatureKey := config.Config.SignatureKey
+
+	validateKey := fmt.Sprintf("%s:%s:%s", serviceName, signatureKey, requestAt)
+	hash := sha256.New()
+	hash.Write([]byte(validateKey))
+	resultHash := hex.EncodeToString(hash.Sum(nil))
+
+	if apiKey != resultHash {
+		return errConstant.ErrUnauthorized
+	}
+	return nil
+}
+
+func validateBearerToken(c *fiber.Ctx, token string) error {
+	if !strings.Contains(token, "Bearer") {
+		return errConstant.ErrUnauthorized
+	}
+
+	tokenString := extractBearerToken(token)
+	if tokenString == "" {
+		return errConstant.ErrUnauthorized
+	}
+
+	claims := &services.Claims{}
+	tokenJwt, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		_, ok := token.Method.(*jwt.SigningMethodHMAC)
+		if !ok {
+			return nil, errConstant.ErrInvalidToken
+		}
+
+		jwtSecret := []byte(config.Config.JwtSecretKey)
+		return jwtSecret, nil
+	})
+
+	if err != nil || !tokenJwt.Valid {
+		return errConstant.ErrUnauthorized
+	}
+
+	// Store user data in Fiber's Locals
+	c.Locals(constants.UserLofiber, claims.User)
+	c.Set(constants.Token, token)
+	return nil
+}
+
+func Authenticate() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		var err error
+		token := c.Get(constants.Authorization)
+		if token == "" {
+			return responseUnauthorized(c, errConstant.ErrUnauthorized.Error())
+		}
+
+		err = validateBearerToken(c, token)
+		if err != nil {
+			return responseUnauthorized(c, err.Error())
+		}
+
+		err = validateAPIKey(c)
+		if err != nil {
+			return responseUnauthorized(c, err.Error())
+		}
+
+		return c.Next()
+	}
+}

@@ -1,0 +1,21 @@
+{
+  "port": 8085,
+  "appName": "backend-pos",
+  "appEnv": "local",
+  "signatureKey": "nauUBioyuwbSdqwyhfd",
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "name": "backend_pos",
+    "username": "postgres",
+    "password": "postgresql",
+    "maxOpenConnection": 10,
+    "maxLifetimeConnection": 10,
+    "maxIdleConnection": 10,
+    "maxIdleTime": 10
+  },
+  "rateLimiterMaxRequest": 1000,
+  "rateLimiterTimeSecond": 60,
+  "jwtSecretKey": "zxcnwoquwSOUBWIOUasdnSdawd",
+  "jwtExpirationTime": 1440
+}
