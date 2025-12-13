@@ -9,12 +9,12 @@ import (
 func RunRoleSeeder(db *gorm.DB) {
 	roles := []models.Role{
 		{
-			Code: "ADMIN",
-			Name: "Administrator",
+			Code: "OWNER",
+			Name: "Owner",
 		},
 		{
-			Code: "CUSTOMER",
-			Name: "Customer",
+			Code: "ADMIN",
+			Name: "Administrator",
 		},
 	}
 
