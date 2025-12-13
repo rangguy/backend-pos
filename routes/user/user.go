@@ -8,14 +8,14 @@ import (
 
 type UserRoute struct {
 	controller controllers.IControllerRegistry
-	group      *fiber.Group
+	group      fiber.Router
 }
 
 type IUserRoute interface {
 	Run()
 }
 
-func NewUserRoute(controller controllers.IControllerRegistry, group *fiber.Group) IUserRoute {
+func NewUserRoute(controller controllers.IControllerRegistry, group fiber.Router) IUserRoute {
 	return &UserRoute{
 		controller: controller,
 		group:      group,

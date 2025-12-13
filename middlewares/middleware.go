@@ -14,27 +14,32 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"runtime/debug"
 	"strings"
 	"time"
 )
 
-func HandlePanic() fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		defer func() {
-			if r := recover(); r != nil {
-				logrus.Errorf("Recovered from panic: %v", r)
-				c.Status(http.StatusInternalServerError).JSON(response.Response{
-					Status:  constants.Error,
-					Message: errConstant.ErrInternalServerError.Error(),
-				})
-			}
-		}()
-		return c.Next()
+func HandlePanic() fiber.ErrorHandler {
+	return func(c *fiber.Ctx, err error) error {
+		code := fiber.StatusInternalServerError
+		message := errConstant.ErrInternalServerError.Error()
+
+		if e, ok := err.(*fiber.Error); ok {
+			code = e.Code
+			message = e.Message
+		}
+
+		logrus.Errorf("Error occurred: %v\nStack trace: %s", err, debug.Stack())
+
+		return c.Status(code).JSON(response.Response{
+			Status:  constants.Error,
+			Message: message,
+		})
 	}
 }
 
 func RateLimiter(max int, duration time.Duration) fiber.Handler {
-	config := limiter.Config{
+	configLimiter := limiter.Config{
 		Max:        max,
 		Expiration: duration,
 		KeyGenerator: func(c *fiber.Ctx) string {
@@ -47,7 +52,7 @@ func RateLimiter(max int, duration time.Duration) fiber.Handler {
 			})
 		},
 	}
-	return limiter.New(config)
+	return limiter.New(configLimiter)
 }
 
 func extractBearerToken(token string) string {
@@ -107,8 +112,7 @@ func validateBearerToken(c *fiber.Ctx, token string) error {
 		return errConstant.ErrUnauthorized
 	}
 
-	// Store user data in Fiber's Locals
-	c.Locals(constants.UserLofiber, claims.User)
+	c.Locals(constants.UserLogin, claims.User)
 	c.Set(constants.Token, token)
 	return nil
 }

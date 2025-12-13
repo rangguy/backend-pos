@@ -8,14 +8,14 @@ import (
 
 type Registry struct {
 	controller controllers.IControllerRegistry
-	group      *fiber.Group
+	group      fiber.Router
 }
 
 type IRouterRegistry interface {
 	Serve()
 }
 
-func NewRouteRegistry(controller controllers.IControllerRegistry, group *fiber.Group) IRouterRegistry {
+func NewRouteRegistry(controller controllers.IControllerRegistry, group fiber.Router) IRouterRegistry {
 	return &Registry{
 		controller: controller,
 		group:      group,

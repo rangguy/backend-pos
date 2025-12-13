@@ -1,14 +1,14 @@
 {
-  "port": 8085,
+  "port": 8001,
   "appName": "backend-pos",
   "appEnv": "local",
-  "signatureKey": "nauUBioyuwbSdqwyhfd",
+  "signatureKey": "",
   "database": {
-    "host": "localhost",
-    "port": 5432,
+    "host": "host.docker.internal",
+    "port": 5433,
     "name": "backend_pos",
-    "username": "postgres",
-    "password": "postgresql",
+    "username": "",
+    "password": "",
     "maxOpenConnection": 10,
     "maxLifetimeConnection": 10,
     "maxIdleConnection": 10,
@@ -16,6 +16,6 @@
   },
   "rateLimiterMaxRequest": 1000,
   "rateLimiterTimeSecond": 60,
-  "jwtSecretKey": "zxcnwoquwSOUBWIOUasdnSdawd",
+  "jwtSecretKey": "",
   "jwtExpirationTime": 1440
 }

@@ -1,5 +1,7 @@
 package main
 
-func main() {
+import "backend/cmd"
 
+func main() {
+	cmd.Run()
 }
