@@ -117,6 +117,87 @@ func validateBearerToken(c *fiber.Ctx, token string) error {
 	return nil
 }
 
+func CheckRole(allowedRoles []string) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		// Ambil token dari header Authorization
+		authHeader := c.Get("Authorization")
+		if authHeader == "" {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "Missing authorization header",
+			})
+		}
+
+		// Bersihkan prefix "Bearer "
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+		if tokenString == authHeader {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "Invalid authorization format. Use: Bearer <token>",
+			})
+		}
+
+		// Parse dan validasi JWT token
+		claims := jwt.MapClaims{}
+		parsedToken, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+			// CRITICAL: Validasi algoritma signing untuk mencegah algorithm confusion attack
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			}
+			// Ambil JWT secret dari config
+			return []byte(config.Config.JwtSecretKey), nil
+		})
+
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "Invalid or expired token",
+			})
+		}
+
+		if !parsedToken.Valid {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "Token is not valid",
+			})
+		}
+
+		if exp, ok := claims["exp"].(float64); ok {
+			if time.Now().Unix() > int64(exp) {
+				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+					"error": "Token has expired",
+				})
+			}
+		}
+
+		userRole, ok := claims["Role"].(string)
+		if !ok || userRole == "" {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "Role not found in token",
+			})
+		}
+
+		userRole = strings.ToLower(strings.TrimSpace(userRole))
+
+		hasPermission := false
+		for _, allowedRole := range allowedRoles {
+			if strings.ToLower(allowedRole) == userRole {
+				hasPermission = true
+				break
+			}
+		}
+
+		if !hasPermission {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+				"error":   "Forbidden: insufficient permissions",
+				"message": fmt.Sprintf("Required role: %v, your role: %s", allowedRoles, userRole),
+			})
+		}
+
+		c.Locals("uuid", claims["UUID"].(string))
+		c.Locals("username", claims["Username"].(string))
+		c.Locals("role", userRole)
+
+		return c.Next()
+	}
+}
+
 func Authenticate() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var err error
