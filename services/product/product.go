@@ -41,7 +41,6 @@ func (p *ProductService) GetAllWithPagination(ctx context.Context, param *dto.Pr
 			PriceBuy:  product.PriceBuy,
 			PriceSale: product.PriceSale,
 			Stock:     product.Stock,
-			Image:     product.Image,
 			CreatedAt: product.CreatedAt,
 			UpdatedAt: product.UpdatedAt,
 		})
@@ -73,7 +72,6 @@ func (p *ProductService) GetAllWithoutPagination(ctx context.Context) ([]dto.Pro
 			PriceBuy:  product.PriceBuy,
 			PriceSale: product.PriceSale,
 			Stock:     product.Stock,
-			Image:     product.Image,
 			CreatedAt: product.CreatedAt,
 			UpdatedAt: product.UpdatedAt,
 		})
@@ -95,7 +93,6 @@ func (p *ProductService) GetByUUID(ctx context.Context, uuid string) (*dto.Produ
 		PriceBuy:  product.PriceBuy,
 		PriceSale: product.PriceSale,
 		Stock:     product.Stock,
-		Image:     product.Image,
 		CreatedAt: product.CreatedAt,
 		UpdatedAt: product.UpdatedAt,
 	}
@@ -116,7 +113,6 @@ func (p *ProductService) GetByCode(ctx context.Context, code string) (*dto.Produ
 		PriceBuy:  product.PriceBuy,
 		PriceSale: product.PriceSale,
 		Stock:     product.Stock,
-		Image:     product.Image,
 		CreatedAt: product.CreatedAt,
 		UpdatedAt: product.UpdatedAt,
 	}
@@ -125,8 +121,31 @@ func (p *ProductService) GetByCode(ctx context.Context, code string) (*dto.Produ
 }
 
 func (p *ProductService) Create(ctx context.Context, request *dto.ProductRequest) (*dto.ProductResponse, error) {
-	//TODO implement me
-	panic("implement me")
+	product := &dto.ProductRequest{
+		Code:      request.Code,
+		Name:      request.Name,
+		PriceBuy:  request.PriceBuy,
+		PriceSale: request.PriceSale,
+		Stock:     request.Stock,
+	}
+
+	newProduct, err := p.repository.GetProduct().Create(ctx, product)
+	if err != nil {
+		return nil, err
+	}
+
+	productResult := &dto.ProductResponse{
+		UUID:      newProduct.UUID,
+		Code:      newProduct.Code,
+		Name:      newProduct.Name,
+		PriceBuy:  newProduct.PriceBuy,
+		PriceSale: newProduct.PriceSale,
+		Stock:     newProduct.Stock,
+		CreatedAt: newProduct.CreatedAt,
+		UpdatedAt: newProduct.UpdatedAt,
+	}
+
+	return productResult, nil
 }
 
 func (p *ProductService) Update(ctx context.Context, uuid string, request *dto.ProductRequest) (*dto.ProductResponse, error) {

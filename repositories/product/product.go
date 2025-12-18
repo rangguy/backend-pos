@@ -22,8 +22,8 @@ type IProductRepository interface {
 	FindAllWithoutPagination(context.Context) ([]models.Product, error)
 	FindByUUID(context.Context, string) (*models.Product, error)
 	FindByCode(context.Context, string) (*models.Product, error)
-	Create(context.Context, *models.Product) (*models.Product, error)
-	Update(context.Context, string, *models.Product) (*models.Product, error)
+	Create(context.Context, *dto.ProductRequest) (*models.Product, error)
+	Update(context.Context, string, *dto.ProductRequest) (*models.Product, error)
 	Delete(context.Context, string) error
 }
 
@@ -120,7 +120,7 @@ func (p *ProductRepository) FindByCode(ctx context.Context, code string) (*model
 	return &product, nil
 }
 
-func (p *ProductRepository) Create(ctx context.Context, req *models.Product) (*models.Product, error) {
+func (p *ProductRepository) Create(ctx context.Context, req *dto.ProductRequest) (*models.Product, error) {
 	product := models.Product{
 		UUID:      uuid.New(),
 		Name:      req.Name,
@@ -139,7 +139,7 @@ func (p *ProductRepository) Create(ctx context.Context, req *models.Product) (*m
 	return &product, nil
 }
 
-func (p *ProductRepository) Update(ctx context.Context, uuid string, req *models.Product) (*models.Product, error) {
+func (p *ProductRepository) Update(ctx context.Context, uuid string, req *dto.ProductRequest) (*models.Product, error) {
 	product := models.Product{
 		Name:      req.Name,
 		PriceBuy:  req.PriceBuy,
