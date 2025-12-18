@@ -6,23 +6,20 @@ import (
 	"time"
 )
 
-type FieldRequest struct {
+type ProductRequest struct {
 	Name         string                 `form:"name" validate:"required"`
-	Code         string                 `form:"code" validate:"required"`
 	PricePerHour int                    `form:"pricePerHour" validate:"required"`
 	Images       []multipart.FileHeader `form:"images" validate:"required"`
 }
 
-type UpdateFieldRequest struct {
+type UpdateProductRequest struct {
 	Name         string                 `form:"name" validate:"required"`
-	Code         string                 `form:"code" validate:"required"`
 	PricePerHour int                    `form:"pricePerHour" validate:"required"`
 	Images       []multipart.FileHeader `form:"images"`
 }
 
-type FieldResponse struct {
+type ProductResponse struct {
 	UUID         uuid.UUID  `json:"uuid"`
-	Code         string     `json:"code"`
 	Name         string     `json:"name"`
 	PricePerHour int        `json:"pricePerHour"`
 	Images       []string   `json:"images"`
@@ -30,8 +27,7 @@ type FieldResponse struct {
 	UpdatedAt    *time.Time `json:"updatedAt"`
 }
 
-type FieldDetailResponse struct {
-	Code         string     `json:"code"`
+type ProductDetailResponse struct {
 	Name         string     `json:"name"`
 	PricePerHour int        `json:"pricePerHour"`
 	Images       []string   `json:"images"`
@@ -39,7 +35,7 @@ type FieldDetailResponse struct {
 	UpdatedAt    *time.Time `json:"updatedAt"`
 }
 
-type FieldRequestParam struct {
+type ProductRequestParam struct {
 	Page       int     `form:"page" validate:"required"`
 	Limit      int     `form:"limit" validate:"required"`
 	SortColumn *string `form:"sortColumn"`
