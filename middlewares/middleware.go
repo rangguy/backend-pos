@@ -166,7 +166,14 @@ func CheckRole(allowedRoles []string) fiber.Handler {
 			}
 		}
 
-		userRole, ok := claims["Role"].(string)
+		userData, ok := claims["User"].(map[string]interface{})
+		if !ok {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "User data not found in token",
+			})
+		}
+
+		userRole, ok := userData["role"].(string)
 		if !ok || userRole == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"error": "Role not found in token",
@@ -190,8 +197,8 @@ func CheckRole(allowedRoles []string) fiber.Handler {
 			})
 		}
 
-		c.Locals("uuid", claims["UUID"].(string))
-		c.Locals("username", claims["Username"].(string))
+		c.Locals("uuid", userData["uuid"].(string))
+		c.Locals("username", userData["username"].(string))
 		c.Locals("role", userRole)
 
 		return c.Next()
