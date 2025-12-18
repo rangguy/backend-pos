@@ -73,10 +73,9 @@ func responseUnauthorized(c *fiber.Ctx, message string) error {
 func validateAPIKey(c *fiber.Ctx) error {
 	apiKey := c.Get(constants.XApiKey)
 	requestAt := c.Get(constants.XRequestAt)
-	serviceName := c.Get(constants.XServiceName)
 	signatureKey := config.Config.SignatureKey
 
-	validateKey := fmt.Sprintf("%s:%s:%s", serviceName, signatureKey, requestAt)
+	validateKey := fmt.Sprintf("%s:%s", signatureKey, requestAt)
 	hash := sha256.New()
 	hash.Write([]byte(validateKey))
 	resultHash := hex.EncodeToString(hash.Sum(nil))
