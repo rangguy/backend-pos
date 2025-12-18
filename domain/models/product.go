@@ -14,6 +14,7 @@ type Product struct {
 	PriceSale uint      `gorm:"type:uint;not null"`
 	Stock     uint      `gorm:"type:uint;not null"`
 	Unit      uint      `gorm:"type:uint;not null"`
+	Image     string    `gorm:"type:text;not null"`
 	CreatedAt *time.Time
 	UpdatedAt *time.Time
 }

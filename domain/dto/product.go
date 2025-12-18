@@ -7,32 +7,48 @@ import (
 )
 
 type ProductRequest struct {
-	Name         string                 `form:"name" validate:"required"`
-	PricePerHour int                    `form:"pricePerHour" validate:"required"`
-	Images       []multipart.FileHeader `form:"images" validate:"required"`
+	Code      string               `form:"code" validate:"required"`
+	Name      string               `form:"name" validate:"required"`
+	PriceBuy  uint                 `form:"priceBuy" validate:"required"`
+	PriceSale uint                 `form:"priceSale" validate:"required"`
+	Stock     uint                 `form:"stock" validate:"required"`
+	Unit      uint                 `form:"unit" validate:"required"`
+	Image     multipart.FileHeader `form:"image"`
 }
 
 type UpdateProductRequest struct {
-	Name         string                 `form:"name" validate:"required"`
-	PricePerHour int                    `form:"pricePerHour" validate:"required"`
-	Images       []multipart.FileHeader `form:"images"`
+	Code      string               `form:"code"`
+	Name      string               `form:"name"`
+	PriceBuy  uint                 `form:"priceBuy"`
+	PriceSale uint                 `form:"priceSale"`
+	Stock     uint                 `form:"stock"`
+	Unit      uint                 `form:"unit"`
+	Image     multipart.FileHeader `form:"image"`
 }
 
 type ProductResponse struct {
-	UUID         uuid.UUID  `json:"uuid"`
-	Name         string     `json:"name"`
-	PricePerHour int        `json:"pricePerHour"`
-	Images       []string   `json:"images"`
-	CreatedAt    *time.Time `json:"createdAt"`
-	UpdatedAt    *time.Time `json:"updatedAt"`
+	UUID      uuid.UUID  `json:"uuid"`
+	Code      string     `json:"code"`
+	Name      string     `json:"name"`
+	PriceBuy  uint       `json:"priceBuy"`
+	PriceSale uint       `json:"priceSale"`
+	Stock     uint       `json:"stock"`
+	Unit      uint       `json:"unit"`
+	Image     string     `json:"image,omitempty"`
+	CreatedAt *time.Time `json:"createdAt"`
+	UpdatedAt *time.Time `json:"updatedAt"`
 }
 
 type ProductDetailResponse struct {
-	Name         string     `json:"name"`
-	PricePerHour int        `json:"pricePerHour"`
-	Images       []string   `json:"images"`
-	CreatedAt    *time.Time `json:"createdAt"`
-	UpdatedAt    *time.Time `json:"updatedAt"`
+	Code      string     `json:"code"`
+	Name      string     `json:"name"`
+	PriceBuy  uint       `json:"priceBuy"`
+	PriceSale uint       `json:"priceSale"`
+	Stock     uint       `json:"stock"`
+	Unit      uint       `json:"unit"`
+	Image     string     `json:"image,omitempty"`
+	CreatedAt *time.Time `json:"createdAt"`
+	UpdatedAt *time.Time `json:"updatedAt"`
 }
 
 type ProductRequestParam struct {

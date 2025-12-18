@@ -19,7 +19,7 @@ type ProductRepository struct {
 
 type IProductRepository interface {
 	FindAllWithPagination(context.Context, *dto.ProductRequestParam) ([]models.Product, int64, error)
-	FindAllWithOutPagination(context.Context) ([]models.Product, error)
+	FindAllWithoutPagination(context.Context) ([]models.Product, error)
 	FindByUUID(context.Context, string) (*models.Product, error)
 	FindByCode(context.Context, string) (*models.Product, error)
 	Create(context.Context, *models.Product) (*models.Product, error)
@@ -69,7 +69,7 @@ func (p *ProductRepository) FindAllWithPagination(ctx context.Context, param *dt
 	return products, total, nil
 }
 
-func (p *ProductRepository) FindAllWithOutPagination(ctx context.Context) ([]models.Product, error) {
+func (p *ProductRepository) FindAllWithoutPagination(ctx context.Context) ([]models.Product, error) {
 	var products []models.Product
 	err := p.db.
 		WithContext(ctx).
