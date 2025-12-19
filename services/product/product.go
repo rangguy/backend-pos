@@ -5,6 +5,7 @@ import (
 	"backend/domain/dto"
 	"backend/repositories"
 	"context"
+	uuid2 "github.com/google/uuid"
 )
 
 type ProductService struct {
@@ -17,7 +18,7 @@ type IProductService interface {
 	GetByUUID(context.Context, string) (*dto.ProductResponse, error)
 	GetByCode(context.Context, string) (*dto.ProductResponse, error)
 	Create(context.Context, *dto.ProductRequest) (*dto.ProductResponse, error)
-	Update(context.Context, string, *dto.ProductRequest) (*dto.ProductResponse, error)
+	Update(context.Context, string, *dto.UpdateProductRequest) (*dto.ProductResponse, error)
 	Delete(context.Context, string) error
 }
 
@@ -41,6 +42,7 @@ func (p *ProductService) GetAllWithPagination(ctx context.Context, param *dto.Pr
 			PriceBuy:  product.PriceBuy,
 			PriceSale: product.PriceSale,
 			Stock:     product.Stock,
+			Unit:      product.Unit,
 			CreatedAt: product.CreatedAt,
 			UpdatedAt: product.UpdatedAt,
 		})
@@ -72,6 +74,7 @@ func (p *ProductService) GetAllWithoutPagination(ctx context.Context) ([]dto.Pro
 			PriceBuy:  product.PriceBuy,
 			PriceSale: product.PriceSale,
 			Stock:     product.Stock,
+			Unit:      product.Unit,
 			CreatedAt: product.CreatedAt,
 			UpdatedAt: product.UpdatedAt,
 		})
@@ -93,6 +96,7 @@ func (p *ProductService) GetByUUID(ctx context.Context, uuid string) (*dto.Produ
 		PriceBuy:  product.PriceBuy,
 		PriceSale: product.PriceSale,
 		Stock:     product.Stock,
+		Unit:      product.Unit,
 		CreatedAt: product.CreatedAt,
 		UpdatedAt: product.UpdatedAt,
 	}
@@ -113,6 +117,7 @@ func (p *ProductService) GetByCode(ctx context.Context, code string) (*dto.Produ
 		PriceBuy:  product.PriceBuy,
 		PriceSale: product.PriceSale,
 		Stock:     product.Stock,
+		Unit:      product.Unit,
 		CreatedAt: product.CreatedAt,
 		UpdatedAt: product.UpdatedAt,
 	}
@@ -127,6 +132,7 @@ func (p *ProductService) Create(ctx context.Context, request *dto.ProductRequest
 		PriceBuy:  request.PriceBuy,
 		PriceSale: request.PriceSale,
 		Stock:     request.Stock,
+		Unit:      request.Unit,
 	}
 
 	newProduct, err := p.repository.GetProduct().Create(ctx, product)
@@ -141,6 +147,7 @@ func (p *ProductService) Create(ctx context.Context, request *dto.ProductRequest
 		PriceBuy:  newProduct.PriceBuy,
 		PriceSale: newProduct.PriceSale,
 		Stock:     newProduct.Stock,
+		Unit:      request.Unit,
 		CreatedAt: newProduct.CreatedAt,
 		UpdatedAt: newProduct.UpdatedAt,
 	}
@@ -148,12 +155,48 @@ func (p *ProductService) Create(ctx context.Context, request *dto.ProductRequest
 	return productResult, nil
 }
 
-func (p *ProductService) Update(ctx context.Context, uuid string, request *dto.ProductRequest) (*dto.ProductResponse, error) {
-	//TODO implement me
-	panic("implement me")
+func (p *ProductService) Update(ctx context.Context, uuid string, request *dto.UpdateProductRequest) (*dto.ProductResponse, error) {
+	updateProduct := &dto.ProductRequest{
+		Code:      request.Code,
+		Name:      request.Name,
+		PriceBuy:  request.PriceBuy,
+		PriceSale: request.PriceSale,
+		Stock:     request.Stock,
+		Unit:      request.Unit,
+	}
+
+	newProduct, err := p.repository.GetProduct().Update(ctx, uuid, updateProduct)
+	if err != nil {
+		return nil, err
+	}
+
+	uuidParsed, _ := uuid2.Parse(uuid)
+
+	productResult := &dto.ProductResponse{
+		UUID:      uuidParsed,
+		Code:      newProduct.Code,
+		Name:      newProduct.Name,
+		PriceBuy:  newProduct.PriceBuy,
+		PriceSale: newProduct.PriceSale,
+		Stock:     newProduct.Stock,
+		Unit:      newProduct.Unit,
+		CreatedAt: newProduct.CreatedAt,
+		UpdatedAt: newProduct.UpdatedAt,
+	}
+
+	return productResult, nil
 }
 
 func (p *ProductService) Delete(ctx context.Context, uuid string) error {
-	//TODO implement me
-	panic("implement me")
+	_, err := p.repository.GetProduct().FindByUUID(ctx, uuid)
+	if err != nil {
+		return err
+	}
+
+	err = p.repository.GetProduct().Delete(ctx, uuid)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

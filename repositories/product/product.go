@@ -141,6 +141,7 @@ func (p *ProductRepository) Create(ctx context.Context, req *dto.ProductRequest)
 
 func (p *ProductRepository) Update(ctx context.Context, uuid string, req *dto.ProductRequest) (*models.Product, error) {
 	product := models.Product{
+		Code:      req.Code,
 		Name:      req.Name,
 		PriceBuy:  req.PriceBuy,
 		PriceSale: req.PriceSale,
@@ -150,6 +151,10 @@ func (p *ProductRepository) Update(ctx context.Context, uuid string, req *dto.Pr
 
 	err := p.db.WithContext(ctx).Where("uuid = ?", uuid).Updates(&product).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errWrap.WrapError(errProduct.ErrProductNotFound)
+		}
+
 		return nil, errWrap.WrapError(errConstant.ErrSQLError)
 	}
 

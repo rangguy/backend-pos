@@ -2,7 +2,8 @@ package services
 
 import (
 	"backend/repositories"
-	services "backend/services/user"
+	productService "backend/services/product"
+	userService "backend/services/user"
 )
 
 type Registry struct {
@@ -10,7 +11,8 @@ type Registry struct {
 }
 
 type IServiceRegistry interface {
-	GetUser() services.IUserService
+	GetUser() userService.IUserService
+	GetProduct() productService.IProductService
 }
 
 func NewServiceRegistry(repository repositories.IRepositoryRegistry) IServiceRegistry {
@@ -19,6 +21,10 @@ func NewServiceRegistry(repository repositories.IRepositoryRegistry) IServiceReg
 	}
 }
 
-func (r *Registry) GetUser() services.IUserService {
-	return services.NewUserService(r.repository)
+func (r *Registry) GetUser() userService.IUserService {
+	return userService.NewUserService(r.repository)
+}
+
+func (r *Registry) GetProduct() productService.IProductService {
+	return productService.NewProductService(r.repository)
 }

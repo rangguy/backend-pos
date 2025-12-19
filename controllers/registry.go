@@ -1,7 +1,8 @@
 package controllers
 
 import (
-	controllers "backend/controllers/user"
+	productController "backend/controllers/product"
+	userControllers "backend/controllers/user"
 	"backend/services"
 )
 
@@ -10,7 +11,8 @@ type Registry struct {
 }
 
 type IControllerRegistry interface {
-	GetUserController() controllers.IUserController
+	GetUserController() userControllers.IUserController
+	GetProductController() productController.IProductController
 }
 
 func NewControllerRegistry(service services.IServiceRegistry) IControllerRegistry {
@@ -19,6 +21,10 @@ func NewControllerRegistry(service services.IServiceRegistry) IControllerRegistr
 	}
 }
 
-func (r *Registry) GetUserController() controllers.IUserController {
-	return controllers.NewUserController(r.service)
+func (r *Registry) GetUserController() userControllers.IUserController {
+	return userControllers.NewUserController(r.service)
+}
+
+func (r *Registry) GetProductController() productController.IProductController {
+	return productController.NewProductController(r.service)
 }
