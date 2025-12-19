@@ -156,6 +156,11 @@ func (p *ProductService) Create(ctx context.Context, request *dto.ProductRequest
 }
 
 func (p *ProductService) Update(ctx context.Context, uuid string, request *dto.UpdateProductRequest) (*dto.ProductResponse, error) {
+	product, err := p.repository.GetProduct().FindByUUID(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+
 	updateProduct := &dto.ProductRequest{
 		Code:      request.Code,
 		Name:      request.Name,
@@ -163,6 +168,10 @@ func (p *ProductService) Update(ctx context.Context, uuid string, request *dto.U
 		PriceSale: request.PriceSale,
 		Stock:     request.Stock,
 		Unit:      request.Unit,
+	}
+
+	if updateProduct.Code == "" {
+		updateProduct.Code = product.Code
 	}
 
 	newProduct, err := p.repository.GetProduct().Update(ctx, uuid, updateProduct)

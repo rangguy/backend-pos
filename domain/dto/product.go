@@ -6,12 +6,12 @@ import (
 )
 
 type ProductRequest struct {
-	Code      string `form:"code" validate:"required"`
+	Code      string `form:"code"`
 	Name      string `form:"name" validate:"required"`
 	PriceBuy  uint   `form:"priceBuy" validate:"required"`
 	PriceSale uint   `form:"priceSale" validate:"required"`
 	Stock     uint   `form:"stock" validate:"required"`
-	Unit      uint   `form:"unit" validate:"required"`
+	Unit      string `form:"unit" validate:"required"`
 }
 
 type UpdateProductRequest struct {
@@ -20,7 +20,7 @@ type UpdateProductRequest struct {
 	PriceBuy  uint   `form:"priceBuy"`
 	PriceSale uint   `form:"priceSale"`
 	Stock     uint   `form:"stock"`
-	Unit      uint   `form:"unit"`
+	Unit      string `form:"unit"`
 }
 
 type ProductResponse struct {
@@ -30,7 +30,7 @@ type ProductResponse struct {
 	PriceBuy  uint       `json:"priceBuy"`
 	PriceSale uint       `json:"priceSale"`
 	Stock     uint       `json:"stock"`
-	Unit      uint       `json:"unit"`
+	Unit      string     `json:"unit"`
 	CreatedAt *time.Time `json:"createdAt"`
 	UpdatedAt *time.Time `json:"updatedAt"`
 }
@@ -41,7 +41,7 @@ type ProductDetailResponse struct {
 	PriceBuy  uint       `json:"priceBuy"`
 	PriceSale uint       `json:"priceSale"`
 	Stock     uint       `json:"stock"`
-	Unit      uint       `json:"unit"`
+	Unit      string     `json:"unit"`
 	CreatedAt *time.Time `json:"createdAt"`
 	UpdatedAt *time.Time `json:"updatedAt"`
 }

@@ -2,7 +2,8 @@ package routes
 
 import (
 	"backend/controllers"
-	routes "backend/routes/user"
+	productRoutes "backend/routes/product"
+	userRoutes "backend/routes/user"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -24,8 +25,13 @@ func NewRouteRegistry(controller controllers.IControllerRegistry, group fiber.Ro
 
 func (r *Registry) Serve() {
 	r.userRoute().Run()
+	r.productRoute().Run()
 }
 
-func (r *Registry) userRoute() routes.IUserRoute {
-	return routes.NewUserRoute(r.controller, r.group)
+func (r *Registry) userRoute() userRoutes.IUserRoute {
+	return userRoutes.NewUserRoute(r.controller, r.group)
+}
+
+func (r *Registry) productRoute() productRoutes.IProductRoute {
+	return productRoutes.NewProductRoute(r.controller, r.group)
 }
