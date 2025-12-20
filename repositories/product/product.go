@@ -23,7 +23,7 @@ type IProductRepository interface {
 	FindByUUID(context.Context, string) (*models.Product, error)
 	FindByCode(context.Context, string) (*models.Product, error)
 	Create(context.Context, *dto.ProductRequest) (*models.Product, error)
-	Update(context.Context, string, *dto.ProductRequest) (*models.Product, error)
+	Update(context.Context, string, *dto.UpdateProductRequest) (*models.Product, error)
 	Delete(context.Context, string) error
 }
 
@@ -139,7 +139,7 @@ func (p *ProductRepository) Create(ctx context.Context, req *dto.ProductRequest)
 	return &product, nil
 }
 
-func (p *ProductRepository) Update(ctx context.Context, uuid string, req *dto.ProductRequest) (*models.Product, error) {
+func (p *ProductRepository) Update(ctx context.Context, uuid string, req *dto.UpdateProductRequest) (*models.Product, error) {
 	product := models.Product{
 		Code:      req.Code,
 		Name:      req.Name,

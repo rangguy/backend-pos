@@ -156,12 +156,7 @@ func (p *ProductService) Create(ctx context.Context, request *dto.ProductRequest
 }
 
 func (p *ProductService) Update(ctx context.Context, uuid string, request *dto.UpdateProductRequest) (*dto.ProductResponse, error) {
-	product, err := p.repository.GetProduct().FindByUUID(ctx, uuid)
-	if err != nil {
-		return nil, err
-	}
-
-	updateProduct := &dto.ProductRequest{
+	updateProduct := &dto.UpdateProductRequest{
 		Code:      request.Code,
 		Name:      request.Name,
 		PriceBuy:  request.PriceBuy,
@@ -170,11 +165,12 @@ func (p *ProductService) Update(ctx context.Context, uuid string, request *dto.U
 		Unit:      request.Unit,
 	}
 
-	if updateProduct.Code == "" {
-		updateProduct.Code = product.Code
+	_, err := p.repository.GetProduct().Update(ctx, uuid, updateProduct)
+	if err != nil {
+		return nil, err
 	}
 
-	newProduct, err := p.repository.GetProduct().Update(ctx, uuid, updateProduct)
+	updatedProduct, err := p.repository.GetProduct().FindByUUID(ctx, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -183,14 +179,14 @@ func (p *ProductService) Update(ctx context.Context, uuid string, request *dto.U
 
 	productResult := &dto.ProductResponse{
 		UUID:      uuidParsed,
-		Code:      newProduct.Code,
-		Name:      newProduct.Name,
-		PriceBuy:  newProduct.PriceBuy,
-		PriceSale: newProduct.PriceSale,
-		Stock:     newProduct.Stock,
-		Unit:      newProduct.Unit,
-		CreatedAt: newProduct.CreatedAt,
-		UpdatedAt: newProduct.UpdatedAt,
+		Code:      updatedProduct.Code,
+		Name:      updatedProduct.Name,
+		PriceBuy:  updatedProduct.PriceBuy,
+		PriceSale: updatedProduct.PriceSale,
+		Stock:     updatedProduct.Stock,
+		Unit:      updatedProduct.Unit,
+		CreatedAt: updatedProduct.CreatedAt,
+		UpdatedAt: updatedProduct.UpdatedAt,
 	}
 
 	return productResult, nil

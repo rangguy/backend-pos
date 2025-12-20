@@ -6,7 +6,7 @@ import (
 )
 
 type ProductRequest struct {
-	Code      string `form:"code"`
+	Code      string `form:"code" validate:"required"`
 	Name      string `form:"name" validate:"required"`
 	PriceBuy  uint   `form:"priceBuy" validate:"required"`
 	PriceSale uint   `form:"priceSale" validate:"required"`
