@@ -1,0 +1,907 @@
+openapi: 3.0.3
+info:
+  title: Backend POS API
+  description: API specification for Backend POS application
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8085/api/v1
+    description: Development server
+
+tags:
+  - name: Authentication
+    description: Authentication endpoints
+  - name: Products
+    description: Product management endpoints
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+      description: API key generated from signatureKey + x-request-at
+    RequestAt:
+      type: apiKey
+      in: header
+      name: x-request-at
+      description: Timestamp for request validation
+
+  schemas:
+    SuccessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        message:
+          type: string
+          example: OK
+        data:
+          type: object
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: error
+        message:
+          type: string
+          example: Unprocessable Entity
+        data:
+          oneOf:
+            - type: array
+              items:
+                $ref: '#/components/schemas/ValidationError'
+            - type: "null"
+
+    ValidationError:
+      type: object
+      properties:
+        field:
+          type: string
+          example: Username
+        message:
+          type: string
+          example: Username is required
+
+    UnauthorizedResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: error
+        message:
+          type: string
+          example: unauthorized
+        data:
+          type: "null"
+
+    User:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          example: 410049f0-f4f7-4808-9960-8119d5867b79
+        name:
+          type: string
+          example: Owner
+        username:
+          type: string
+          example: owner
+        email:
+          type: string
+          format: email
+          example: owner@mail.com
+        role:
+          type: string
+          example: owner
+        phone_number:
+          type: string
+          example: "0987654321"
+
+    UserWithoutRole:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          example: 410049f0-f4f7-4808-9960-8119d5867b79
+        name:
+          type: string
+          example: Owner
+        username:
+          type: string
+          example: owner
+        email:
+          type: string
+          format: email
+          example: owner@mail.com
+        phone_number:
+          type: string
+          example: "0987654321"
+
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: owner
+        password:
+          type: string
+          format: password
+          example: owner123
+
+    RegisterRequest:
+      type: object
+      required:
+        - name
+        - username
+        - password
+        - confirm_password
+        - phone_number
+        - email
+      properties:
+        name:
+          type: string
+          example: Wowok
+        username:
+          type: string
+          example: wowok
+        password:
+          type: string
+          format: password
+          example: wowok123
+        confirm_password:
+          type: string
+          format: password
+          example: wowok123
+        phone_number:
+          type: string
+          example: "085793838422"
+        email:
+          type: string
+          format: email
+          example: wowok@gmail.com
+
+    Product:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        code:
+          type: string
+          example: BRG1005
+        name:
+          type: string
+          example: Tepung Beras
+        price_buy:
+          type: number
+          format: float
+          example: 3000
+        price_sale:
+          type: number
+          format: float
+          example: 31000
+        stock:
+          type: integer
+          example: 30
+        unit:
+          type: string
+          example: kg
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-12-19T09:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-12-19T09:00:00Z"
+
+    ProductRequest:
+      type: object
+      required:
+        - code
+        - name
+        - price_buy
+        - price_sale
+        - stock
+        - unit
+      properties:
+        code:
+          type: string
+          example: BRG1005
+        name:
+          type: string
+          example: Tepung Beras
+        price_buy:
+          type: number
+          format: float
+          example: 3000
+        price_sale:
+          type: number
+          format: float
+          example: 31000
+        stock:
+          type: integer
+          example: 30
+        unit:
+          type: string
+          example: kg
+
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 10
+        total:
+          type: integer
+          example: 100
+        total_pages:
+          type: integer
+          example: 10
+
+paths:
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticate user and receive access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            examples:
+              valid:
+                summary: Valid login request
+                value:
+                  username: owner
+                  password: owner123
+              empty_field:
+                summary: Empty username field
+                value:
+                  username: ""
+                  password: owner123
+              wrong_type:
+                summary: Wrong data type
+                value:
+                  username: 123
+                  password: owner123
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                empty_field:
+                  summary: Required field is empty
+                  value:
+                    status: error
+                    message: Unprocessable Entity
+                    data:
+                      - field: Username
+                        message: Username is required
+                wrong_type:
+                  summary: Wrong data type
+                  value:
+                    status: error
+                    message: Unprocessable Entity
+                    data:
+                      - field: username
+                        message: username must be string type, got number
+
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register new user
+      description: Create a new user account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            examples:
+              valid:
+                summary: Valid registration request
+                value:
+                  name: Wowok
+                  username: wowok
+                  password: wowok123
+                  confirm_password: wowok123
+                  phone_number: "085793838422"
+                  email: wowok@gmail.com
+              empty_field:
+                summary: Empty required field
+                value:
+                  name: ""
+                  username: wowok
+                  password: wowok123
+                  confirm_password: wowok123
+                  phone_number: "085793838422"
+                  email: wowok@gmail.com
+              wrong_type:
+                summary: Wrong data type
+                value:
+                  name: 123
+                  username: wowok
+                  password: wowok123
+                  confirm_password: wowok123
+                  phone_number: "085793838422"
+                  email: wowok@gmail.com
+      responses:
+        '201':
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    $ref: '#/components/schemas/UserWithoutRole'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                empty_field:
+                  summary: Required field is empty
+                  value:
+                    status: error
+                    message: Unprocessable Entity
+                    data:
+                      - field: Name
+                        message: Name is required
+                wrong_type:
+                  summary: Wrong data type
+                  value:
+                    status: error
+                    message: Unprocessable Entity
+                    data:
+                      - field: name
+                        message: name must be string type, got number
+
+  /auth:
+    get:
+      tags:
+        - Authentication
+      summary: Get current user details
+      description: Get authenticated user information by token
+      security:
+        - ApiKeyAuth: []
+          RequestAt: []
+      responses:
+        '200':
+          description: User details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+
+  /auth/{uuid}:
+    get:
+      tags:
+        - Authentication
+      summary: Get user by UUID
+      description: Retrieve user information by UUID
+      security:
+        - ApiKeyAuth: []
+          RequestAt: []
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 410049f0-f4f7-4808-9960-8119d5867b79
+      responses:
+        '200':
+          description: User details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    $ref: '#/components/schemas/UserWithoutRole'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+
+  /products:
+    get:
+      tags:
+        - Products
+      summary: Get all products without pagination
+      description: Retrieve all products in the system
+      security:
+        - ApiKeyAuth: []
+          RequestAt: []
+      responses:
+        '200':
+          description: Products retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+
+    post:
+      tags:
+        - Products
+      summary: Create new product
+      description: Add a new product to the system
+      security:
+        - ApiKeyAuth: []
+          RequestAt: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+            examples:
+              valid:
+                summary: Valid product request
+                value:
+                  code: BRG1005
+                  name: Tepung Beras
+                  price_buy: 3000
+                  price_sale: 31000
+                  stock: 30
+                  unit: kg
+              empty_field:
+                summary: Empty required field
+                value:
+                  code: ""
+                  name: Tepung Beras
+                  price_buy: 3000
+                  price_sale: 31000
+                  stock: 30
+                  unit: kg
+              wrong_type:
+                summary: Wrong data type
+                value:
+                  code: 123
+                  name: Tepung Beras
+                  price_buy: 3000
+                  price_sale: 31000
+                  stock: 30
+                  unit: kg
+      responses:
+        '201':
+          description: Product created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    $ref: '#/components/schemas/Product'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                empty_field:
+                  summary: Required field is empty
+                  value:
+                    status: error
+                    message: Unprocessable Entity
+                    data:
+                      - field: Code
+                        message: Code is required
+                wrong_type:
+                  summary: Wrong data type
+                  value:
+                    status: error
+                    message: Unprocessable Entity
+                    data:
+                      - field: code
+                        message: code must be string type, got number
+
+  /products/pagination:
+    get:
+      tags:
+        - Products
+      summary: Get all products with pagination
+      description: Retrieve products with pagination support
+      security:
+        - ApiKeyAuth: []
+          RequestAt: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          example: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          example: 10
+      responses:
+        '200':
+          description: Products retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+
+  /products/{uuid}:
+    get:
+      tags:
+        - Products
+      summary: Get product by UUID
+      description: Retrieve a specific product by UUID
+      security:
+        - ApiKeyAuth: []
+          RequestAt: []
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        '200':
+          description: Product retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    $ref: '#/components/schemas/Product'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: Product not found
+                  data:
+                    type: "null"
+
+    put:
+      tags:
+        - Products
+      summary: Update product by UUID
+      description: Update an existing product
+      security:
+        - ApiKeyAuth: []
+          RequestAt: []
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+            examples:
+              valid:
+                summary: Valid update request
+                value:
+                  code: BRG1005
+                  name: Tepung Beras Updated
+                  price_buy: 3500
+                  price_sale: 32000
+                  stock: 25
+                  unit: kg
+              empty_field:
+                summary: Empty required field
+                value:
+                  code: ""
+                  name: Tepung Beras
+                  price_buy: 3000
+                  price_sale: 31000
+                  stock: 30
+                  unit: kg
+              wrong_type:
+                summary: Wrong data type
+                value:
+                  code: BRG1005
+                  name: 123
+                  price_buy: 3000
+                  price_sale: 31000
+                  stock: 30
+                  unit: kg
+      responses:
+        '200':
+          description: Product updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    $ref: '#/components/schemas/Product'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: Product not found
+                  data:
+                    type: "null"
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Products
+      summary: Delete product by UUID
+      description: Remove a product from the system
+      security:
+        - ApiKeyAuth: []
+          RequestAt: []
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        '200':
+          description: Product deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Product deleted successfully
+                  data:
+                    type: "null"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: Product not found
+                  data:
+                    type: "null"
+
+  /products/code/{code}:
+    get:
+      tags:
+        - Products
+      summary: Get product by code
+      description: Retrieve a specific product by its code (for barcode scanning)
+      security:
+        - ApiKeyAuth: []
+          RequestAt: []
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+          example: BRG1005
+      responses:
+        '200':
+          description: Product retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    $ref: '#/components/schemas/Product'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: Product not found
+                  data:
+                    type: "null"

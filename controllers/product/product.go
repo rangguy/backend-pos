@@ -5,6 +5,8 @@ import (
 	"backend/common/response"
 	"backend/domain/dto"
 	productService "backend/services"
+	"encoding/json"
+	"errors"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"net/http"
@@ -120,17 +122,31 @@ func (p *ProductController) GetByCode(ctx *fiber.Ctx) error {
 }
 
 func (p *ProductController) Create(ctx *fiber.Ctx) error {
-	var request dto.ProductRequest
-	if err := ctx.BodyParser(&request); err != nil {
+	request := &dto.ProductRequest{}
+
+	err := ctx.BodyParser(request)
+	if err != nil {
+		var syntaxError *json.SyntaxError
+		statusCode := http.StatusUnprocessableEntity
+
+		if errors.As(err, &syntaxError) {
+			statusCode = http.StatusBadRequest
+		}
+
+		errMessage := http.StatusText(statusCode)
+		errResponse := errValidation.ErrValidationResponse(err)
+
 		return response.HttpResponse(response.ParamHTTPResp{
-			Code:  http.StatusBadRequest,
-			Err:   err,
-			Fiber: ctx,
+			Code:    statusCode,
+			Message: &errMessage,
+			Data:    errResponse,
+			Err:     err,
+			Fiber:   ctx,
 		})
 	}
 
 	validate := validator.New()
-	if err := validate.Struct(request); err != nil {
+	if err = validate.Struct(request); err != nil {
 		errMessage := http.StatusText(http.StatusUnprocessableEntity)
 		errorResponse := errValidation.ErrValidationResponse(err)
 
@@ -143,7 +159,7 @@ func (p *ProductController) Create(ctx *fiber.Ctx) error {
 		})
 	}
 
-	result, err := p.service.GetProduct().Create(ctx.Context(), &request)
+	result, err := p.service.GetProduct().Create(ctx.Context(), request)
 	if err != nil {
 		return response.HttpResponse(response.ParamHTTPResp{
 			Code:  http.StatusBadRequest,
@@ -160,17 +176,30 @@ func (p *ProductController) Create(ctx *fiber.Ctx) error {
 }
 
 func (p *ProductController) Update(ctx *fiber.Ctx) error {
-	var request dto.UpdateProductRequest
-	if err := ctx.BodyParser(&request); err != nil {
+	request := &dto.UpdateProductRequest{}
+
+	err := ctx.BodyParser(request)
+	if err != nil {
+		var syntaxError *json.SyntaxError
+		statusCode := http.StatusUnprocessableEntity
+
+		if errors.As(err, &syntaxError) {
+			statusCode = http.StatusBadRequest
+		}
+
+		errMessage := http.StatusText(statusCode)
+		errResponse := errValidation.ErrValidationResponse(err)
 		return response.HttpResponse(response.ParamHTTPResp{
-			Code:  http.StatusBadRequest,
-			Err:   err,
-			Fiber: ctx,
+			Code:    statusCode,
+			Message: &errMessage,
+			Data:    errResponse,
+			Err:     err,
+			Fiber:   ctx,
 		})
 	}
 
 	validate := validator.New()
-	if err := validate.Struct(request); err != nil {
+	if err = validate.Struct(request); err != nil {
 		errMessage := http.StatusText(http.StatusUnprocessableEntity)
 		errorResponse := errValidation.ErrValidationResponse(err)
 
@@ -183,7 +212,7 @@ func (p *ProductController) Update(ctx *fiber.Ctx) error {
 		})
 	}
 
-	result, err := p.service.GetProduct().Update(ctx.Context(), ctx.Params("uuid"), &request)
+	result, err := p.service.GetProduct().Update(ctx.Context(), ctx.Params("uuid"), request)
 	if err != nil {
 		return response.HttpResponse(response.ParamHTTPResp{
 			Code:  http.StatusBadRequest,

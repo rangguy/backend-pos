@@ -5,6 +5,8 @@ import (
 	"backend/common/response"
 	"backend/domain/dto"
 	"backend/services"
+	"encoding/json"
+	"errors"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"net/http"
@@ -31,10 +33,21 @@ func (u *UserController) Login(ctx *fiber.Ctx) error {
 
 	err := ctx.BodyParser(request)
 	if err != nil {
+		var syntaxError *json.SyntaxError
+		statusCode := http.StatusUnprocessableEntity
+
+		if errors.As(err, &syntaxError) {
+			statusCode = http.StatusBadRequest
+		}
+
+		errMessage := http.StatusText(statusCode)
+		errResponse := errWrap.ErrValidationResponse(err)
 		return response.HttpResponse(response.ParamHTTPResp{
-			Code:  http.StatusBadRequest,
-			Err:   err,
-			Fiber: ctx,
+			Code:    statusCode,
+			Message: &errMessage,
+			Data:    errResponse,
+			Err:     err,
+			Fiber:   ctx,
 		})
 	}
 
@@ -74,10 +87,21 @@ func (u *UserController) Register(ctx *fiber.Ctx) error {
 
 	err := ctx.BodyParser(request)
 	if err != nil {
+		var syntaxError *json.SyntaxError
+		statusCode := http.StatusUnprocessableEntity
+
+		if errors.As(err, &syntaxError) {
+			statusCode = http.StatusBadRequest
+		}
+
+		errMessage := http.StatusText(statusCode)
+		errResponse := errWrap.ErrValidationResponse(err)
 		return response.HttpResponse(response.ParamHTTPResp{
-			Code:  http.StatusBadRequest,
-			Err:   err,
-			Fiber: ctx,
+			Code:    statusCode,
+			Message: &errMessage,
+			Data:    errResponse,
+			Err:     err,
+			Fiber:   ctx,
 		})
 	}
 
@@ -117,10 +141,21 @@ func (u *UserController) Update(ctx *fiber.Ctx) error {
 
 	err := ctx.BodyParser(request)
 	if err != nil {
+		var syntaxError *json.SyntaxError
+		statusCode := http.StatusUnprocessableEntity
+
+		if errors.As(err, &syntaxError) {
+			statusCode = http.StatusBadRequest
+		}
+
+		errMessage := http.StatusText(statusCode)
+		errResponse := errWrap.ErrValidationResponse(err)
 		return response.HttpResponse(response.ParamHTTPResp{
-			Code:  http.StatusBadRequest,
-			Err:   err,
-			Fiber: ctx,
+			Code:    statusCode,
+			Message: &errMessage,
+			Data:    errResponse,
+			Err:     err,
+			Fiber:   ctx,
 		})
 	}
 

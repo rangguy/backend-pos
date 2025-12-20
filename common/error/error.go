@@ -1,6 +1,7 @@
 package error
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/go-playground/validator/v10"
@@ -17,7 +18,28 @@ var ErrValidator = map[string]string{}
 
 func ErrValidationResponse(err error) (validationResponse []ValidationResponse) {
 	var fieldErrors validator.ValidationErrors
+	var unmarshalTypeError *json.UnmarshalTypeError
+	var syntaxError *json.SyntaxError
 
+	// Handle JSON Syntax Error
+	if errors.As(err, &syntaxError) {
+		validationResponse = append(validationResponse, ValidationResponse{
+			Field:   "json",
+			Message: fmt.Sprintf("Invalid JSON syntax at position %d", syntaxError.Offset),
+		})
+		return validationResponse
+	}
+
+	// Handle JSON Type Mismatch Error
+	if errors.As(err, &unmarshalTypeError) {
+		validationResponse = append(validationResponse, ValidationResponse{
+			Field:   unmarshalTypeError.Field,
+			Message: fmt.Sprintf("%s must be %s type, got %s", unmarshalTypeError.Field, unmarshalTypeError.Type.String(), unmarshalTypeError.Value),
+		})
+		return validationResponse
+	}
+
+	// Handle Validator Errors
 	if errors.As(err, &fieldErrors) {
 		for _, err := range fieldErrors {
 			switch err.Tag() {
@@ -55,6 +77,7 @@ func ErrValidationResponse(err error) (validationResponse []ValidationResponse) 
 			}
 		}
 	}
+
 	return validationResponse
 }
 
