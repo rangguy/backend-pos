@@ -13,7 +13,7 @@ type UserResponse struct {
 	Username    string    `json:"username"`
 	Email       string    `json:"email"`
 	Role        string    `json:"role,omitempty"`
-	PhoneNumber string    `json:"phoneNumber"`
+	PhoneNumber string    `json:"phone_number"`
 }
 
 type LoginResponse struct {
