@@ -25,9 +25,9 @@ type RegisterRequest struct {
 	Name            string `json:"name" validate:"required"`
 	Username        string `json:"username" validate:"required"`
 	Password        string `json:"password" validate:"required"`
-	ConfirmPassword string `json:"confirmPassword" validate:"required"`
+	ConfirmPassword string `json:"confirm_password" validate:"required"`
 	Email           string `json:"email" validate:"required,email"`
-	PhoneNumber     string `json:"phoneNumber" validate:"required,number"`
+	PhoneNumber     string `json:"phone_number" validate:"required,number"`
 	RoleID          uint
 }
 
@@ -39,8 +39,8 @@ type UpdateRequest struct {
 	Name            string  `json:"name" validate:"required"`
 	Username        string  `json:"username" validate:"required"`
 	Password        *string `json:"password,omitempty"`
-	ConfirmPassword *string `json:"confirmPassword,omitempty"`
+	ConfirmPassword *string `json:"confirm_password,omitempty"`
 	Email           string  `json:"email" validate:"required,email"`
-	PhoneNumber     string  `json:"phoneNumber" validate:"required,number"`
+	PhoneNumber     string  `json:"phone_number" validate:"required,number"`
 	RoleID          uint
 }

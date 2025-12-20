@@ -8,8 +8,8 @@ import (
 type ProductRequest struct {
 	Code      string `form:"code" validate:"required"`
 	Name      string `form:"name" validate:"required"`
-	PriceBuy  uint   `form:"priceBuy" validate:"required"`
-	PriceSale uint   `form:"priceSale" validate:"required"`
+	PriceBuy  uint   `form:"price_buy" validate:"required"`
+	PriceSale uint   `form:"price_sale" validate:"required"`
 	Stock     uint   `form:"stock" validate:"required"`
 	Unit      string `form:"unit" validate:"required"`
 }
@@ -17,8 +17,8 @@ type ProductRequest struct {
 type UpdateProductRequest struct {
 	Code      string `form:"code"`
 	Name      string `form:"name"`
-	PriceBuy  uint   `form:"priceBuy"`
-	PriceSale uint   `form:"priceSale"`
+	PriceBuy  uint   `form:"price_buy"`
+	PriceSale uint   `form:"price_sale"`
 	Stock     uint   `form:"stock"`
 	Unit      string `form:"unit"`
 }
@@ -27,8 +27,8 @@ type ProductResponse struct {
 	UUID      uuid.UUID  `json:"uuid"`
 	Code      string     `json:"code"`
 	Name      string     `json:"name"`
-	PriceBuy  uint       `json:"priceBuy"`
-	PriceSale uint       `json:"priceSale"`
+	PriceBuy  uint       `json:"price_buy"`
+	PriceSale uint       `json:"price_sale"`
 	Stock     uint       `json:"stock"`
 	Unit      string     `json:"unit"`
 	CreatedAt *time.Time `json:"createdAt"`
@@ -38,8 +38,8 @@ type ProductResponse struct {
 type ProductDetailResponse struct {
 	Code      string     `json:"code"`
 	Name      string     `json:"name"`
-	PriceBuy  uint       `json:"priceBuy"`
-	PriceSale uint       `json:"priceSale"`
+	PriceBuy  uint       `json:"price_buy"`
+	PriceSale uint       `json:"price_sale"`
 	Stock     uint       `json:"stock"`
 	Unit      string     `json:"unit"`
 	CreatedAt *time.Time `json:"createdAt"`
