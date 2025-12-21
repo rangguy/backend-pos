@@ -61,7 +61,7 @@ var command = &cobra.Command{
 		app.Use(func(c *fiber.Ctx) error {
 			c.Set("Access-Control-Allow-Origin", "*")
 			c.Set("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, PATCH")
-			c.Set("Access-Control-Allow-Headers", "Content-Type, Authorization, x-service-name, x-api-key, x-request-at")
+			c.Set("Access-Control-Allow-Headers", "Content-Type, Authorization, x-api-key, x-request-at")
 
 			if c.Method() == "OPTIONS" {
 				return c.SendStatus(fiber.StatusNoContent)
