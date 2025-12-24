@@ -6,26 +6,26 @@ import (
 )
 
 type ProductRequest struct {
-	Code      string `json:"code"  validate:"required"`
-	Name      string `json:"name"  validate:"required"`
-	PriceBuy  uint   `json:"price_buy" validate:"required"`
-	PriceSale uint   `json:"price_sale" validate:"required"`
-	Stock     uint   `json:"stock" validate:"required"`
-	Unit      string `json:"unit" validate:"required"`
+	Code      *string `json:"code"`
+	Name      string  `json:"name"  validate:"required"`
+	PriceBuy  uint    `json:"price_buy" validate:"required"`
+	PriceSale uint    `json:"price_sale" validate:"required"`
+	Stock     uint    `json:"stock" validate:"required"`
+	Unit      string  `json:"unit" validate:"required"`
 }
 
 type UpdateProductRequest struct {
-	Code      string `json:"code"`
-	Name      string `json:"name"`
-	PriceBuy  uint   `json:"price_buy"`
-	PriceSale uint   `json:"price_sale"`
-	Stock     uint   `json:"stock"`
-	Unit      string `json:"unit"`
+	Code      *string `json:"code"`
+	Name      string  `json:"name"`
+	PriceBuy  uint    `json:"price_buy"`
+	PriceSale uint    `json:"price_sale"`
+	Stock     uint    `json:"stock"`
+	Unit      string  `json:"unit"`
 }
 
 type ProductResponse struct {
 	UUID      uuid.UUID  `json:"uuid"`
-	Code      string     `json:"code"`
+	Code      *string    `json:"code"`
 	Name      string     `json:"name"`
 	PriceBuy  uint       `json:"price_buy"`
 	PriceSale uint       `json:"price_sale"`

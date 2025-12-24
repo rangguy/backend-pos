@@ -126,16 +126,7 @@ func (p *ProductService) GetByCode(ctx context.Context, code string) (*dto.Produ
 }
 
 func (p *ProductService) Create(ctx context.Context, request *dto.ProductRequest) (*dto.ProductResponse, error) {
-	product := &dto.ProductRequest{
-		Code:      request.Code,
-		Name:      request.Name,
-		PriceBuy:  request.PriceBuy,
-		PriceSale: request.PriceSale,
-		Stock:     request.Stock,
-		Unit:      request.Unit,
-	}
-
-	newProduct, err := p.repository.GetProduct().Create(ctx, product)
+	newProduct, err := p.repository.GetProduct().Create(ctx, request)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +138,7 @@ func (p *ProductService) Create(ctx context.Context, request *dto.ProductRequest
 		PriceBuy:  newProduct.PriceBuy,
 		PriceSale: newProduct.PriceSale,
 		Stock:     newProduct.Stock,
-		Unit:      request.Unit,
+		Unit:      newProduct.Unit,
 		CreatedAt: newProduct.CreatedAt,
 		UpdatedAt: newProduct.UpdatedAt,
 	}
