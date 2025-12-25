@@ -37,7 +37,7 @@ jobs:
           scp -P ${{ secrets.VPS_PORT }} backend-pos.tar.gz ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/tmp/
           
           echo "📤 Copying docker-compose.yml..."
-          scp -P ${{ secrets.VPS_PORT }} docker-compose.yml ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/backend-pos/
+          scp -P ${{ secrets.VPS_PORT }} docker-compose.yml ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/home/user/backend-pos/
 
       - name: 🚀 Deploy to VPS
         uses: appleboy/ssh-action@v1.0.3
@@ -48,7 +48,7 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           script: |
             echo "🔵 Starting deployment..."
-            cd /var/www/backend-pos
+            cd /home/user/backend-pos
             
             echo "📦 Loading Docker image..."
             docker load < /tmp/backend-pos.tar.gz
