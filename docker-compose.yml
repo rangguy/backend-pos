@@ -1,0 +1,56 @@
+version: "3.7"
+
+services:
+  # PostgreSQL Service
+  postgresql-backend-pos:
+    image: postgres:15-alpine
+    container_name: postgresql-backend-pos
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${POSTGRES_DATABASE}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgresql-backend-pos-data:/var/lib/postgresql/data
+    networks:
+      - backend-pos-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DATABASE}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend POS Service
+  backend-pos:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: backend-pos:latest
+    container_name: backend-pos
+    restart: unless-stopped
+    depends_on:
+      postgresql-backend-pos:
+        condition: service_healthy
+    ports:
+      - "${HOST_API_PORT}:${CONT_API_PORT}"
+    environment:
+      - APP_PORT=${CONT_API_PORT}
+      - APP_TIMEZONE=Asia/Jakarta
+      - DB_HOST=postgresql-backend-pos
+      - DB_PORT=5432
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_NAME=${POSTGRES_DATABASE}
+    volumes:
+      - ./uploads:/app/uploads
+      - ./temp:/app/temp
+    networks:
+      - backend-pos-network
+
+volumes:
+  postgresql-backend-pos-data:
+    driver: local
+
+networks:
+  backend-pos-network:
+    driver: bridge

@@ -1,0 +1,98 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🏗️ Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔨 Build Docker Image
+        run: |
+          docker build -t backend-pos:latest .
+          docker save backend-pos:latest | gzip > backend-pos.tar.gz
+
+      - name: 🔑 Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: 📦 Copy Files to VPS
+        run: |
+          echo "📤 Copying Docker image..."
+          scp -P ${{ secrets.VPS_PORT }} backend-pos.tar.gz ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/tmp/
+          
+          echo "📤 Copying docker-compose.yml..."
+          scp -P ${{ secrets.VPS_PORT }} docker-compose.yml ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/backend-pos/
+
+      - name: 🚀 Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            echo "🔵 Starting deployment..."
+            cd /var/www/backend-pos
+            
+            echo "📦 Loading Docker image..."
+            docker load < /tmp/backend-pos.tar.gz
+            rm /tmp/backend-pos.tar.gz
+            
+            echo "📝 Creating .env file..."
+            cat > .env << EOF
+            POSTGRES_DATABASE=${{ secrets.POSTGRES_DATABASE }}
+            POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            HOST_API_PORT=${{ secrets.HOST_API_PORT }}
+            CONT_API_PORT=${{ secrets.CONT_API_PORT }}
+            EOF
+            
+            echo "🔄 Stopping old containers..."
+            docker-compose down
+            
+            echo "🚀 Starting new containers..."
+            docker-compose up -d
+            
+            echo "🧹 Cleaning up old images..."
+            docker image prune -af --filter "until=24h"
+            
+            echo "✅ Deployment completed!"
+            echo ""
+            echo "📊 Container Status:"
+            docker-compose ps
+            echo ""
+            echo "📋 Recent Logs:"
+            docker-compose logs --tail=30 backend-pos
+
+      - name: 🧹 Cleanup Local Files
+        if: always()
+        run: |
+          rm -f ~/.ssh/id_ed25519
+          rm -f backend-pos.tar.gz
+
+      - name: ✅ Deployment Success Notification
+        if: success()
+        run: |
+          echo "🎉 Deployment to VPS completed successfully!"
+          echo "🔗 Application URL: http://${{ secrets.VPS_HOST }}:${{ secrets.HOST_API_PORT }}"
+
+      - name: ❌ Deployment Failure Notification
+        if: failure()
+        run: |
+          echo "❌ Deployment failed! Check logs above for details."
