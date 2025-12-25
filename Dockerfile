@@ -47,6 +47,8 @@ RUN mkdir -p /app/uploads /app/temp /app/config && \
 # Copy binary from builder
 COPY --from=builder --chown=userapp:binarygroup /app/backend-pos .
 
+RUN chmod +x /app/backend-pos
+
 # Switch to non-root user
 USER userapp
 
