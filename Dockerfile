@@ -1,5 +1,5 @@
 # Stage 1: Build the application
-FROM golang:1.23-alpine AS builder
+FROM golang:1.24-alpine AS builder
 
 ENV GO111MODULE=on \
     CGO_ENABLED=0 \
