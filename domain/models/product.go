@@ -8,7 +8,7 @@ import (
 type Product struct {
 	ID        uint      `gorm:"primaryKey;autoIncrement"`
 	UUID      uuid.UUID `gorm:"type:uuid;not null"`
-	Code      *string   `gorm:"type:varchar(100);unique"`
+	Code      string    `gorm:"type:varchar(100)"`
 	Name      string    `gorm:"type:varchar(255);not null"`
 	PriceBuy  uint      `gorm:"type:uint;not null"`
 	PriceSale uint      `gorm:"type:uint;not null"`
