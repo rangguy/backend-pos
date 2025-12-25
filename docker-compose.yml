@@ -3,7 +3,7 @@ version: "3.7"
 services:
   # PostgreSQL Service
   postgresql-backend-pos:
-    image: postgres:15-alpine
+    image: postgres:latest
     container_name: postgresql-backend-pos
     restart: unless-stopped
     environment:
