@@ -2,22 +2,16 @@ name: Deploy to VPS
 
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: [ main, master ]
   workflow_dispatch:
 
 jobs:
   deploy:
-    name: Build and Deploy
     runs-on: ubuntu-latest
 
     steps:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
-
-      - name: 🏗️ Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
 
       - name: 🔨 Build Docker Image
         run: |
@@ -31,13 +25,24 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-      - name: 📦 Copy Files to VPS
+      - name: 📦 Prepare VPS Directory
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            mkdir -p ~/backend-pos/{uploads,temp}
+            echo "✅ Directory prepared"
+
+      - name: 📤 Copy Files to VPS
         run: |
           echo "📤 Copying Docker image..."
           scp -P ${{ secrets.VPS_PORT }} backend-pos.tar.gz ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/tmp/
           
           echo "📤 Copying docker-compose.yml..."
-          scp -P ${{ secrets.VPS_PORT }} docker-compose.yml ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/home/user/backend-pos/
+          scp -P ${{ secrets.VPS_PORT }} docker-compose.yml ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:~/backend-pos/
 
       - name: 🚀 Deploy to VPS
         uses: appleboy/ssh-action@v1.0.3
@@ -48,7 +53,7 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           script: |
             echo "🔵 Starting deployment..."
-            cd /home/user/backend-pos
+            cd ~/backend-pos
             
             echo "📦 Loading Docker image..."
             docker load < /tmp/backend-pos.tar.gz
@@ -56,11 +61,18 @@ jobs:
             
             echo "📝 Creating .env file..."
             cat > .env << EOF
+            # Database Configuration
             POSTGRES_DATABASE=${{ secrets.POSTGRES_DATABASE }}
             POSTGRES_USER=${{ secrets.POSTGRES_USER }}
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            
+            # Application Ports
             HOST_API_PORT=${{ secrets.HOST_API_PORT }}
             CONT_API_PORT=${{ secrets.CONT_API_PORT }}
+            
+            # Security Keys
+            SIGNATURE_KEY=${{ secrets.SIGNATURE_KEY }}
+            JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
             EOF
             
             echo "🔄 Stopping old containers..."
@@ -68,6 +80,9 @@ jobs:
             
             echo "🚀 Starting new containers..."
             docker-compose up -d
+            
+            echo "⏳ Waiting for containers to be healthy..."
+            sleep 10
             
             echo "🧹 Cleaning up old images..."
             docker image prune -af --filter "until=24h"
@@ -85,14 +100,3 @@ jobs:
         run: |
           rm -f ~/.ssh/id_ed25519
           rm -f backend-pos.tar.gz
-
-      - name: ✅ Deployment Success Notification
-        if: success()
-        run: |
-          echo "🎉 Deployment to VPS completed successfully!"
-          echo "🔗 Application URL: http://${{ secrets.VPS_HOST }}:${{ secrets.HOST_API_PORT }}"
-
-      - name: ❌ Deployment Failure Notification
-        if: failure()
-        run: |
-          echo "❌ Deployment failed! Check logs above for details."

@@ -34,14 +34,31 @@ services:
     ports:
       - "${HOST_API_PORT}:${CONT_API_PORT}"
     environment:
-      - APP_ENV=production
+      # Application Config
       - APP_PORT=${CONT_API_PORT}
+      - APP_NAME=backend-pos
+      - APP_ENV=production
       - APP_TIMEZONE=Asia/Jakarta
+
+      # Database Config
       - DB_HOST=postgresql-backend-pos
       - DB_PORT=5432
       - DB_USER=${POSTGRES_USER}
       - DB_PASSWORD=${POSTGRES_PASSWORD}
       - DB_NAME=${POSTGRES_DATABASE}
+      - DB_MAX_OPEN_CONN=10
+      - DB_MAX_LIFETIME_CONN=10
+      - DB_MAX_IDLE_CONN=10
+      - DB_MAX_IDLE_TIME=10
+
+      # Security Config
+      - SIGNATURE_KEY=${SIGNATURE_KEY}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_EXPIRATION_TIME=1440
+
+      # Rate Limiter
+      - RATE_LIMITER_MAX_REQUEST=1000
+      - RATE_LIMITER_TIME_SECOND=60
     volumes:
       - ./uploads:/app/uploads
       - ./temp:/app/temp

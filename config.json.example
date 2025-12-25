@@ -1,11 +1,11 @@
 {
-  "port": 8001,
+  "port": 8085,
   "appName": "backend-pos",
   "appEnv": "local",
   "signatureKey": "",
   "database": {
     "host": "host.docker.internal",
-    "port": 5433,
+    "port": 5432,
     "name": "backend_pos",
     "username": "",
     "password": "",
