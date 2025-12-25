@@ -34,6 +34,7 @@ services:
     ports:
       - "${HOST_API_PORT}:${CONT_API_PORT}"
     environment:
+      - APP_ENV=production
       - APP_PORT=${CONT_API_PORT}
       - APP_TIMEZONE=Asia/Jakarta
       - DB_HOST=postgresql-backend-pos

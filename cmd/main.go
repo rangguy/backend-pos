@@ -13,10 +13,10 @@ import (
 	"backend/services"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/log"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -24,9 +24,8 @@ var command = &cobra.Command{
 	Use:   "serve",
 	Short: "Start the server",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := godotenv.Load(".env")
-		if err != nil {
-			log.Fatal("Error loading .env file")
+		if os.Getenv("APP_ENV") != "production" {
+			_ = godotenv.Load()
 		}
 		config.Init()
 		db, err := config.InitDatabase()
