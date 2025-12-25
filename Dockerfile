@@ -1,5 +1,5 @@
 # Stage 1: Build the application
-FROM golang:1.24-alpine AS builder
+FROM golang:1.23-alpine AS builder
 
 ENV GO111MODULE=on \
     CGO_ENABLED=0 \
@@ -16,7 +16,7 @@ RUN go mod download
 COPY . .
 
 # Build from root (main.go imports cmd/)
-RUN go build -v -o backend-pos . && \
+RUN go build -o backend-pos . && \
     chmod +x backend-pos
 
 # Verify binary created and architecture
