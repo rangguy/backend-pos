@@ -3,6 +3,7 @@ package controllers
 import (
 	errValidation "backend/common/error"
 	"backend/common/response"
+	errProduct "backend/constants/error/product"
 	"backend/domain/dto"
 	productService "backend/services"
 	"encoding/json"
@@ -90,6 +91,14 @@ func (p *ProductController) GetAllWithoutPagination(ctx *fiber.Ctx) error {
 func (p *ProductController) GetByUUID(ctx *fiber.Ctx) error {
 	result, err := p.service.GetProduct().GetByUUID(ctx.Context(), ctx.Params("uuid"))
 	if err != nil {
+		if errors.Is(err, errProduct.ErrProductNotFound) {
+			return response.HttpResponse(response.ParamHTTPResp{
+				Code:  http.StatusNotFound,
+				Err:   err,
+				Fiber: ctx,
+			})
+		}
+
 		return response.HttpResponse(response.ParamHTTPResp{
 			Code:  http.StatusBadRequest,
 			Err:   err,
@@ -107,6 +116,14 @@ func (p *ProductController) GetByUUID(ctx *fiber.Ctx) error {
 func (p *ProductController) GetByCode(ctx *fiber.Ctx) error {
 	result, err := p.service.GetProduct().GetByCode(ctx.Context(), ctx.Params("code"))
 	if err != nil {
+		if errors.Is(err, errProduct.ErrProductNotFound) {
+			return response.HttpResponse(response.ParamHTTPResp{
+				Code:  http.StatusNotFound,
+				Err:   err,
+				Fiber: ctx,
+			})
+		}
+
 		return response.HttpResponse(response.ParamHTTPResp{
 			Code:  http.StatusBadRequest,
 			Err:   err,
@@ -189,6 +206,7 @@ func (p *ProductController) Update(ctx *fiber.Ctx) error {
 
 		errMessage := http.StatusText(statusCode)
 		errResponse := errValidation.ErrValidationResponse(err)
+
 		return response.HttpResponse(response.ParamHTTPResp{
 			Code:    statusCode,
 			Message: &errMessage,
@@ -212,8 +230,20 @@ func (p *ProductController) Update(ctx *fiber.Ctx) error {
 		})
 	}
 
-	result, err := p.service.GetProduct().Update(ctx.Context(), ctx.Params("uuid"), request)
+	result, err := p.service.GetProduct().Update(
+		ctx.Context(),
+		ctx.Params("uuid"),
+		request,
+	)
 	if err != nil {
+		if errors.Is(err, errProduct.ErrProductNotFound) {
+			return response.HttpResponse(response.ParamHTTPResp{
+				Code:  http.StatusNotFound,
+				Err:   err,
+				Fiber: ctx,
+			})
+		}
+
 		return response.HttpResponse(response.ParamHTTPResp{
 			Code:  http.StatusBadRequest,
 			Err:   err,
@@ -226,12 +256,19 @@ func (p *ProductController) Update(ctx *fiber.Ctx) error {
 		Data:  result,
 		Fiber: ctx,
 	})
-
 }
 
 func (p *ProductController) Delete(ctx *fiber.Ctx) error {
 	err := p.service.GetProduct().Delete(ctx.Context(), ctx.Params("uuid"))
 	if err != nil {
+		if errors.Is(err, errProduct.ErrProductNotFound) {
+			return response.HttpResponse(response.ParamHTTPResp{
+				Code:  http.StatusNotFound,
+				Err:   err,
+				Fiber: ctx,
+			})
+		}
+
 		return response.HttpResponse(response.ParamHTTPResp{
 			Code:  http.StatusBadRequest,
 			Err:   err,
